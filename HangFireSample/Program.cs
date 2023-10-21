@@ -25,7 +25,8 @@ builder.Services.AddHangfire(configuration => configuration
 // Add the processing server as IHostedService
 builder.Services.AddHangfireServer();
 var app = builder.Build();
-
+// HangFire Dashboard
+app.UseHangfireDashboard("/hangfire-dashboard");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -34,7 +35,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
+app.MapHangfireDashboard();
 app.MapControllers();
 
 app.Run();
