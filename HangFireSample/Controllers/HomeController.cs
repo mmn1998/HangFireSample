@@ -1,11 +1,12 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace HangFireSample.Controllers;
 
 [ApiController]
-[Route("api")]
-public class HomeController : Controller
+[Route("api/[controller]")]
+public class HomeController : ControllerBase
 {
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<HomeController> _logger;
@@ -19,28 +20,26 @@ public class HomeController : Controller
         _logger = logger;
         _recurringJobManager = recurringJobManager;
     }
-    [HttpPost]
-    [Route("welcome")]
-    public IActionResult Welcome(string userName)
+    [HttpGet("[action]/{username}")]
+    public IActionResult Welcome([FromRoute] string username)
     {
-        var jobId = _backgroundJobClient.Enqueue(() => SendWelcomeMail(userName));
+        var jobId = _backgroundJobClient.Enqueue(() => SendWelcomeMail(username));
         //var jobId = _backgroundJobClient.Schedule(() => SendWelcomeMail(userName), TimeSpan.FromMinutes(10));
         //var jobId = _backgroundJobClient.Schedule(() => SendWelcomeMail(userName), DateTimeOffset(dateAndTime));
         return Ok($"Job Id {jobId} Completed. Welcome Mail Sent!");
     }
-    [HttpPost]
-    [Route("BackUp")]
-    public IActionResult BackUp(string userName)
+    [HttpGet("[action]")]
+    public IActionResult BackUp()
     {
         _recurringJobManager.AddOrUpdate("test", () => BackUpDataBase(), Cron.Weekly);
         return Ok();
     }
-    public void SendWelcomeMail(string userName)
+    private void SendWelcomeMail(string userName)
     {
         //Logic to Mail the user
         _logger.LogInformation($"Welcome to our application, {userName}");
     }
-    public void BackUpDataBase()
+    private void BackUpDataBase()
     {
         // ...
     }
